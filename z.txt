@@ -1,0 +1,16 @@
+npm i express ejs
+npm i --save-dev nodemon dotenv
+npm i bcrypt 
+  //hash password, compare hashed password 
+
+npm i passport passport-local
+  //use local version of password reather than google etc.
+
+npm i express-session
+  //store and persist users [] across different pages
+
+npm i flash
+  //display messages, wrong email, wrong password etc.
+ 
+
+
