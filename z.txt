@@ -9,7 +9,7 @@ npm i passport passport-local
 npm i express-session
   //store and persist users [] across different pages
 
-npm i flash
+npm i express-flash
   //display messages, wrong email, wrong password etc.
  
 
