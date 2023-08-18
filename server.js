@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt')
 const passport = require('passport')
 const flash = require('express-flash')
 const session = require('express-session')
+const methodOverride = require('method-override')
 
 const users = []
 
@@ -38,19 +39,21 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 // store variables to be persistant across the entire session the user has
+app.use(methodOverride('_method'))
 
-app.get('/', (req, res) => {
+app.get('/', checkAuthenticated, (req, res) => {
   res.render('index.ejs', { name: req.user.name })
   // using session with passport, req.user is always to be sent to the user authenticated at that moment
 })
 
-app.get('/login', (req, res) => {
+app.get('/login', checkNotAuthenticated, (req, res) => {
   res.render('login.ejs')
-  console.log(users, 'server 44')
+  // console.log(users, 'server 44')
 })
 
 app.post(
   '/login',
+  checkNotAuthenticated,
   passport.authenticate(
     'local',
     {
@@ -63,11 +66,11 @@ app.post(
   )
 )
 
-app.get('/register', (req, res) => {
+app.get('/register', checkNotAuthenticated, (req, res) => {
   res.render('register.ejs')
 })
 
-app.post('/register', async (req, res) => {
+app.post('/register', checkNotAuthenticated, async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10) // hash sault 10
     users.push({
@@ -81,7 +84,50 @@ app.post('/register', async (req, res) => {
     console.log(err)
     res.redirect('/register')
   }
-  console.log(users)
+  // console.log(users)
 })
+
+// app.delete('/logout', (req, res) => {
+//   req.logOut()
+//   // passport sets up for us automatically, clear the session and logout the user
+//   res.redirect('/login')
+// })
+
+/*  old
+app.delete('/logout', (req, res) => {
+  req.logOut()
+  res.redirect('/login')
+})
+ */
+
+app.delete('/logout', function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      return next(err)
+    }
+    res.redirect('/')
+  })
+})
+
+// protecting routes middleware------------------------
+
+// dont allow none login user to access homepage /
+function checkAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    // from passport,  returns true/false
+    return next()
+  }
+
+  res.redirect('/login')
+}
+
+// loged in user acesss /login  /register,    redirect them to /
+
+function checkNotAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return res.redirect('/')
+  }
+  next()
+}
 
 app.listen(3000)
