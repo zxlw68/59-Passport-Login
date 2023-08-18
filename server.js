@@ -14,9 +14,13 @@ const users = []
 
 const initializePassport = require('./passport-config')
 
-initializePassport(passport, (email) => {
-  return users.find((user) => user.email === email)
-})
+initializePassport(
+  passport,
+  (email) => {
+    return users.find((user) => user.email === email)
+  },
+  (id) => users.find((user) => user.id === id)
+)
 
 app.set('view-engine', 'ejs')
 // use ejs syntax
@@ -36,12 +40,13 @@ app.use(passport.session())
 // store variables to be persistant across the entire session the user has
 
 app.get('/', (req, res) => {
-  res.render('index.ejs')
+  res.render('index.ejs', { name: req.user.name })
+  // using session with passport, req.user is always to be sent to the user authenticated at that moment
 })
 
 app.get('/login', (req, res) => {
   res.render('login.ejs')
-  console.log(users)
+  console.log(users, 'server 44')
 })
 
 app.post(
